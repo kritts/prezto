@@ -43,20 +43,28 @@ function prompt_steeef_setup {
 
   # Use extended color pallete if available.
   if [[ $TERM = *256color* || $TERM = *rxvt* ]]; then
-    _prompt_steeef_colors=(
+    _prompt_colors=(
       "%F{81}"  # Turquoise
       "%F{166}" # Orange
       "%F{135}" # Purple
       "%F{161}" # Hotpink
       "%F{118}" # Limegreen
+      "%F{075}" # electric blue
+      "%F{033}" # fino blue
+      "%F{059}" # dull
+      "%F{226}" # yellow
     )
   else
-    _prompt_steeef_colors=(
+    _prompt_colors=(
       "%F{cyan}"
       "%F{yellow}"
       "%F{magenta}"
       "%F{red}"
       "%F{green}"
+      "%F{cyan}"    # cyan, b/c can't replicate fino blue
+      "%F{cyan}"
+      "%F{cyan}"
+      "$F{yellow}"
     )
   fi
 
@@ -67,10 +75,22 @@ function prompt_steeef_setup {
   #   %a - action (e.g. rebase-i)
   #   %R - repository path
   #   %S - path in the repository
+ 
+  local git_branch_format="${_prompt_colors[2]}%b%f%u%c"
+  local git_action_format="${_prompt_colors[4]}|%a%f"
+  local git_ungit_staged_format="${_prompt_colors[4]}*%f"
+  local git_staged_format="${_prompt_colors[5]}*%f"
+
   local branch_format="(${_prompt_steeef_colors[1]}%b%f%u%c)"
   local action_format="(${_prompt_steeef_colors[5]}%a%f)"
   local unstaged_format="${_prompt_steeef_colors[2]}●%f"
   local staged_format="${_prompt_steeef_colors[5]}●%f"
+
+  # git params
+  zstyle ':vcs_info:git*:prompt:*' unstagedstr "${git_ungit_staged_format}"
+  zstyle ':vcs_info:git*:prompt:*' stagedstr "${git_staged_format}"
+  zstyle ':vcs_info:git*:prompt:*' actionformats " [${git_branch_format}${git_action_format}]"
+  zstyle ':vcs_info:git*:prompt:*' formats " [${git_branch_format}]"
 
   # Set vcs_info parameters.
   zstyle ':vcs_info:*' enable bzr git hg svn
@@ -81,14 +101,22 @@ function prompt_steeef_setup {
   zstyle ':vcs_info:*:prompt:*' formats "${branch_format}"
   zstyle ':vcs_info:*:prompt:*' nvcsformats   ""
 
+  # Time 
+  time_enabled="%(?.${${_prompt_colors[8]}%}.%{${_prompt_colors[4]}%})%*%{$reset_color%}"
+  time_disabled="${fino_green}%*%{$reset_color%}"
+  time=$time_enabled
+
+
   # Set python-info parameters.
   zstyle ':prezto:module:python:info:virtualenv' format '(%v)'
 
   # Define prompts.
   PROMPT="
-${_prompt_steeef_colors[5]}%~%f "'${vcs_info_msg_0_}'"
-"'$python_info[virtualenv]'"$ "
-  RPROMPT=''
+${_prompt_colors[8]}%~%f 
+"'$python_info[virtualenv]'"${_prompt_colors[6]}%1d%f"'${vcs_info_msg_0_}'" ${_prompt_colors[6]}$%f "
+
+  RPROMPT='${_prompt_colors[1]}${time}%f' 
+ 
 }
 
 prompt_steeef_setup "$@"
